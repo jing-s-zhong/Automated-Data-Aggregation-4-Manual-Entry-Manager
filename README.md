@@ -76,7 +76,7 @@ CREATE OR REPLACE PROCEDURE SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_SETUP (REVENU
 RETURNS VARCHAR
 LANGUAGE javascript
 COMMENT = 'This SP is scheduled by a automated monthly task to renew the monthly contracts at the last minute of current month
-    (1) The renewal result is controled by both "IS_ENABALED" and "MANUAL_ENTRY_SCHEDULE_ALLOWED" of the SELLSIDE_CONTRACTS table
+    (1) The renewal result is controlled by both "IS_ENABALED" and "MANUAL_ENTRY_SCHEDULE_ALLOWED" of the SELLSIDE_CONTRACTS table
     (2) Those single-day-entry with the "MONTHLY_REVENUE_FORECAST" as a NULL will not be renewed.'
 AS
 $$
@@ -155,7 +155,7 @@ CREATE OR REPLACE PROCEDURE SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE (REVENUE
 RETURNS VARCHAR
 LANGUAGE javascript
 COMMENT = 'This SP is scheduled by a daily automated task to add the daily indicators to all MANUAL_ENTRY_SCHEDULE_ALLOWED contracts
-    (1) The renewal result is controled by both "IS_ENABALED" and "MANUAL_ENTRY_SCHEDULE_ALLOWED" of the SELLSIDE_CONTRACTS
+    (1) The renewal result is controlled by both "IS_ENABALED" and "MANUAL_ENTRY_SCHEDULE_ALLOWED" of the SELLSIDE_CONTRACTS
     (2) If the argument of REVENUE_DATE is not presented, it will use current date as the date value'
 AS
 $$
@@ -242,7 +242,7 @@ CREATE OR REPLACE PROCEDURE SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_UPDATE (
 	)
 RETURNS VARCHAR
 LANGUAGE javascript
-COMMENT = 'This SP is manually executed by a person to fill the acutal bill or modify the contract budget setting
+COMMENT = 'This SP is manually executed by a person to fill the actual bill or modify the contract budget setting
     (1) If MONTHLY_REVENUE_FORECAST argument is presented as a minus value, it will keep the existing budget value no change
     (2) If MONTHLY_REVENUE_ACTUAL argument is presented as -1 or NULL, it will reset the existing MONTHLY_REVENUE_ACTUAL to NULL'
 AS
@@ -292,9 +292,9 @@ CREATE OR REPLACE PROCEDURE SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE (
 RETURNS VARCHAR
 LANGUAGE javascript
 COMMENT = 'This SP is manually executed by a person to modify the date indicators of a contract
-    (1) The result is controled by the "MANUAL_ENTRY_SCHEDULE_ALLOWED"
+    (1) The result is controlled by the "MANUAL_ENTRY_SCHEDULE_ALLOWED"
     (2) The data must be an automated manual entry, that means the MONTHLY_REVENUE_FORECAST containing a not null value
-    (3) If the argument DATE_WILL_BE_REMAINED is presented as "True" to set a date; if it is presented as "Flase", it will unset a date
+    (3) If the argument DATE_WILL_BE_REMAINED is presented as "True" to set a date; if it is presented as "False", it will unset a date
 	(4) In case of wrong removing a configuration row, so it does not allow unset the dates array to an empty one'
 AS
 $$
@@ -382,7 +382,7 @@ CREATE OR REPLACE PROCEDURE SELLSIDE_CONTRACT_MANUAL_ENTRY_SINGLE_DAY_INSERT (
 RETURNS VARCHAR
 LANGUAGE javascript
 COMMENT = 'This SP is manually executed by a person to add a single-day manual entry
-    (1) The result is controled by the "MANUAL_ENTRY_SCHEDULE_ALLOWED" of the SELLSIDE_CONTRACTS
+    (1) The result is controlled by the "MANUAL_ENTRY_SCHEDULE_ALLOWED" of the SELLSIDE_CONTRACTS
     (2) The single-day manual entry will maintain the MONTHLY_REVENUE_FORECAST as NULL internally to distinct from the automated manual entries
     (3) If MONTHLY_REVENUE_ACTUAL argument is presented as -1 or NULL, it will remove a single-day manual entry from table'
 AS

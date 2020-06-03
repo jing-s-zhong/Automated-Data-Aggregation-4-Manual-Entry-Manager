@@ -1,0 +1,140 @@
+!set variable_substitution=true;
+use database &{db_name};
+use schema &{sc_name};
+--
+----------------------------------------
+-- insert some initial testing data
+----------------------------------------
+INSERT OVERWRITE INTO SELLSIDE_CONTRACT_MANUAL_ENTRY_CONFIGURATION(--id,
+  SELLSIDE_CONTRACT_ID, 
+  REVENUE_MONTH, 
+  MONTHLY_REVENUE_FORECAST, 
+  MONTHLY_REVENUE_ACTUAL, 
+  DATES_IN_MONTH
+)
+SELECT $1
+	,$2
+	,$3
+	,$4
+	,PARSE_JSON($5)
+FROM
+VALUES (
+	12
+	,'2020-01-01'
+	,3100.00
+	,NULL::FLOAT
+	,'[]'
+	)
+	,(
+	17
+	,'2020-01-01'
+	,6200.00
+	,NULL::FLOAT
+	,'[]'
+	)
+	,(
+	18
+	,'2020-01-01'
+	,290.00
+	,NULL::FLOAT
+	,'[]'
+	);
+
+-- Inser a single day manual entry
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_SINGLE_DAY_INSERT ('2019-12-22',16,0.10); 	-- insert one row
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_SINGLE_DAY_INSERT ('2019-12-22',16,-1);		-- remove the just instered
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_SINGLE_DAY_INSERT ('2019-12-23',16,0.20);	-- reinsert another row
+----------------------------------------
+-- check the initial data status
+----------------------------------------
+SELECT *
+FROM SELLSIDE_CONTRACT_MANUAL_ENTRY_CONFIGURATION
+ORDER BY SELLSIDE_CONTRACT_ID, REVENUE_MONTH;
+--
+SELECT *
+FROM SELLSIDE_DAILY_MANUAL_ENTRY
+ORDER BY SELLSIDE_CONTRACT_ID, DATA_TS;
+--
+----------------------------------------
+-- test daily updates
+----------------------------------------
+--SET REVENUE_DATE = TO_VARCHAR(CURRENT_DATE()+1);
+--CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE($REVENUE_DATE);
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE('2020-01-01');				-- make an auto scheduled update
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE('2020-01-02');				-- make another auto scheduled update
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE('2020-01-10',12, true);	-- make a manual insert update
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE('2020-01-20',17, true);	-- make a manual insert update
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE('2020-01-30',18, true);	-- make a manual insert update
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE('2020-01-01',12, false);	-- make a manual remove update
+--
+-- check the changes in DATES_IN_MONTH column
+SELECT *
+FROM SELLSIDE_CONTRACT_MANUAL_ENTRY_CONFIGURATION
+WHERE REVENUE_MONTH = DATE_TRUNC('MONTH', TO_DATE('2020-01-01'))
+;
+--
+-- check the output from result view
+SELECT *
+FROM SELLSIDE_DAILY_MANUAL_ENTRY
+ORDER BY DATA_TS, SELLSIDE_CONTRACT_ID;
+--
+----------------------------------------
+-- test the monthly update
+----------------------------------------
+--SET REVENUE_MONTH = TO_VARCHAR(current_date());
+SET (REVENUE_MONTH,SELLSIDE_CONTRACT_ID,MONTHLY_REVENUE_FORECAST,MONTHLY_REVENUE_ACTUAL) = ('2020-01-02', 17, -2, 20.5);
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_UPDATE($REVENUE_MONTH, $SELLSIDE_CONTRACT_ID, $MONTHLY_REVENUE_FORECAST, $MONTHLY_REVENUE_ACTUAL);
+--
+-- check the changes in MONTHLY_REVENUE_ACTUAL column
+SELECT *
+FROM SELLSIDE_CONTRACT_MANUAL_ENTRY_CONFIGURATION
+WHERE REVENUE_MONTH = DATE_TRUNC('MONTH', TO_DATE($REVENUE_MONTH));
+--
+-- check the output changes from the view
+SELECT *
+FROM SELLSIDE_DAILY_MANUAL_ENTRY
+ORDER BY DATA_TS, SELLSIDE_CONTRACT_ID;
+--
+----------------------------------------
+-- test monthly setup
+----------------------------------------
+-- CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_SETUP('2020-02-02');
+SET REVENUE_MONTH = TO_VARCHAR(CURRENT_DATE());
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_SETUP($REVENUE_MONTH);
+--
+-- check the new row added and the changes in REVENUE_MONTH column
+SELECT *
+FROM SELLSIDE_CONTRACT_MANUAL_ENTRY_CONFIGURATION
+WHERE REVENUE_MONTH = DATE_TRUNC('MONTH', TO_DATE($REVENUE_MONTH))
+;
+--
+-- make one day for one contract
+SET REVENUE_DATE = TO_VARCHAR(CURRENT_DATE());
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE($REVENUE_DATE,18,true);
+--
+-- make one day for all enabled contracts
+SET REVENUE_DATE = TO_VARCHAR(CURRENT_DATE());
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE($REVENUE_DATE);
+--
+-- make one day for one contract
+SET REVENUE_DATE = TO_VARCHAR(CURRENT_DATE());
+CALL SELLSIDE_CONTRACT_MANUAL_ENTRY_DAILY_UPDATE($REVENUE_DATE,18,false);
+--
+-- check the changes in MONTHLY_REVENUE_ACTUAL column
+SELECT *
+FROM SELLSIDE_CONTRACT_MANUAL_ENTRY_CONFIGURATION
+WHERE REVENUE_MONTH = DATE_TRUNC('MONTH', TO_DATE($REVENUE_MONTH));
+--
+-- check the output for new month
+SELECT *
+FROM SELLSIDE_DAILY_MANUAL_ENTRY
+--WHERE DATA_TS = '2020-02-01'
+ORDER BY DATA_TS, SELLSIDE_CONTRACT_ID;
+--
+----------------------------------------
+-- simulate the data aggregator to query data
+----------------------------------------
+SELECT *
+FROM SELLSIDE_DAILY_MANUAL_ENTRY
+WHERE DATA_TS >= '2020-01-01'
+AND DATA_TS < '2020-01-03';
