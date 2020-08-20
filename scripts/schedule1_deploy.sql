@@ -62,12 +62,29 @@ SET COMMENT = 'This table is used to exposure the manual entry of the revenue da
 ;
 --
 ----------------------------------------
+-- Partner contract monthly forecast setup
+----------------------------------------
+--INSERT INTO SELLSIDE_CONTRACT_MANUAL_ENTRY_CONFIGURATION (
+--    SELLSIDE_CONTRACT_ID,
+--    REVENUE_MONTH,
+--    MONTHLY_REVENUE_FORECAST,
+--    DATES_IN_MONTH
+--)
+--SELECT $1, $2, $3, PARSE_JSON($4)
+--FROM VALUES (
+--    16,             -- SELLSIDE_CONTRACT_ID
+--    '2020-01-01',   -- REVENUE_MONTH
+--    50000,          -- MONTHLY_REVENUE_FORECAST
+--    '[12,13]'       -- DATES_IN_MONTH, preset the past dates
+--);
+--
+----------------------------------------
 -- Partner contract monthly renew proc
 ----------------------------------------
--- SHOW PROCEDURES LIKE 'SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_SETUP%';
--- DROP PROCEDURE SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_SETUP(VARCHAR);
+-- SHOW PROCEDURES LIKE 'SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_RENEW%';
+-- DROP PROCEDURE SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_RENEW (VARCHAR);
 --
-CREATE PROCEDURE SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_SETUP (
+CREATE PROCEDURE SELLSIDE_CONTRACT_MANUAL_ENTRY_MONTHLY_RENEW (
 	REVENUE_MONTH VARCHAR
 	)
 RETURNS VARCHAR
