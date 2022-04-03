@@ -1,4 +1,4 @@
-# Automated-Data-Manual-Entry-Manager
+# Data Process Architecture (4) Manual-Entry-Manager
 For some revenue sources, we don’t have any daily report available from the vendors, but internally we need a daily number somehow for management to monitor the business healthy. The most common cases in this scenario are that we are able to get a monthly revenue forecast at the beginning of each month based on the vendor’s agreement. After the month is closed, then we can get a real revenue number for that month. We call generate the daily estimated revenue based on the average of the monthly forecast at the beginning of the month, later we replace these daily estimated revenue with the daily average of the real monthly revenue once we have the real revenue available. We call these calculated revenue as the manual entries. Here we need to develop a solution to manage the manual entries automatically.
 
 
